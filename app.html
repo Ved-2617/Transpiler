@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>XPILE — Transpiler App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="app.css"/>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div class="loading-overlay" id="loader">
+  <div class="load-logo">XPILE</div>
+  <div class="load-bar"><div class="load-fill"></div></div>
+  <div class="load-status" id="load-status">INITIALIZING ENGINE…</div>
+</div>
+
+<!-- CORNER DECORATIONS -->
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<!-- AMBIENT ORBS -->
+<div class="orb o1"></div>
+<div class="orb o2"></div>
+<div class="orb o3"></div>
+
+<div class="app">
+
+  <!-- NAV -->
+  <nav class="app-nav">
+    <a href="home.html" class="nav-back">← Home</a>
+    <div class="nav-logo">XPILE</div>
+    <div class="nav-badges">
+      <span class="nbadge nb-py"><span class="ndot"></span>Python</span>
+      <span class="nbadge nb-c"><span class="ndot"></span>C</span>
+      <span class="nbadge nb-cpp"><span class="ndot"></span>C++</span>
+      <span class="nbadge nb-java"><span class="ndot"></span>Java</span>
+    </div>
+  </nav>
+
+  <!-- PIPELINE BAR -->
+  <div class="pipeline-section">
+    <div class="pipeline-label">Compilation Pipeline</div>
+    <div class="pipeline" id="pipeline">
+      <div class="ph" id="ph0">
+        <div class="ph-n">1</div>
+        <span class="ph-icon">◈</span>
+        <span class="ph-l">Lexer</span>
+      </div>
+      <div class="pipe-arrow" id="ar0"></div>
+      <div class="ph" id="ph1">
+        <div class="ph-n">2</div>
+        <span class="ph-icon">⌥</span>
+        <span class="ph-l">Parser</span>
+      </div>
+      <div class="pipe-arrow" id="ar1"></div>
+      <div class="ph" id="ph2">
+        <div class="ph-n">3</div>
+        <span class="ph-icon">⬡</span>
+        <span class="ph-l">IR Build</span>
+      </div>
+      <div class="pipe-arrow" id="ar2"></div>
+      <div class="ph" id="ph3">
+        <div class="ph-n">4</div>
+        <span class="ph-icon">⊗</span>
+        <span class="ph-l">Code Gen</span>
+      </div>
+      <div class="pipe-arrow" id="ar3"></div>
+      <div class="ph" id="ph4">
+        <div class="ph-n">5</div>
+        <span class="ph-icon">✦</span>
+        <span class="ph-l">Output</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat st0" id="st0">
+      <div class="sv" id="sv0">—</div>
+      <div class="sl">Tokens</div>
+    </div>
+    <div class="stat st1" id="st1">
+      <div class="sv" id="sv1">—</div>
+      <div class="sl">IR Nodes</div>
+    </div>
+    <div class="stat st2" id="st2">
+      <div class="sv" id="sv2">—</div>
+      <div class="sl">Lines Generated</div>
+    </div>
+    <div class="stat st3" id="st3">
+      <div class="sv" id="sv3">4</div>
+      <div class="sl">Target Languages</div>
+    </div>
+  </div>
+
+  <!-- LANGUAGE SELECTOR -->
+  <div class="lang-bar">
+    <span class="lang-bar-label">Input ›</span>
+    <button class="lang-btn active" data-lang="python" onclick="setLang(this)">
+      <div class="ldot"></div>Python / Custom
+    </button>
+    <button class="lang-btn" data-lang="c" onclick="setLang(this)">
+      <div class="ldot"></div>C
+    </button>
+    <button class="lang-btn" data-lang="cpp" onclick="setLang(this)">
+      <div class="ldot"></div>C++
+    </button>
+    <button class="lang-btn" data-lang="java" onclick="setLang(this)">
+      <div class="ldot"></div>Java
+    </button>
+  </div>
+
+  <!-- SYNTAX GUIDE -->
+  <div class="guide-wrap">
+    <div class="guide-header" onclick="toggleGuide()">
+      <span class="guide-title">Syntax Reference</span>
+      <span class="guide-arrow" id="guide-arrow">▼</span>
+    </div>
+    <div class="guide-body" id="guide-body">
+      <div class="guide-inner">
+        <div class="guide-tabs">
+          <button class="gtab on" onclick="showGuide('python',this)">Python</button>
+          <button class="gtab" onclick="showGuide('c',this)">C</button>
+          <button class="gtab" onclick="showGuide('cpp',this)">C++</button>
+          <button class="gtab" onclick="showGuide('java',this)">Java</button>
+        </div>
+        <div class="syntax-block on" id="guide-python">
+<span class="vr">x</span> <span class="op">=</span> <span class="nm">5</span>             <span class="cm"># assign number</span>
+<span class="vr">z</span> <span class="op">=</span> <span class="vr">x</span> <span class="op">+</span> <span class="vr">y</span>          <span class="cm"># arithmetic  (+  -  *  /  %)</span>
+<span class="kw">print</span> <span class="vr">x</span>             <span class="cm"># print (or print(x))</span>
+<span class="kw">if</span> <span class="vr">x</span> <span class="op">></span> <span class="nm">5</span> <span class="op">:</span>          <span class="cm"># if condition</span>
+    <span class="vr">y</span> <span class="op">=</span> <span class="vr">x</span> <span class="op">*</span> <span class="nm">2</span>
+<span class="kw">else</span> <span class="op">:</span>
+    <span class="vr">y</span> <span class="op">=</span> <span class="nm">0</span>
+<span class="kw">while</span> <span class="vr">x</span> <span class="op"><</span> <span class="nm">10</span> <span class="op">:</span>
+    <span class="vr">x</span> <span class="op">=</span> <span class="vr">x</span> <span class="op">+</span> <span class="nm">1</span>
+<span class="kw">return</span> <span class="vr">x</span>
+</div>
+        <div class="syntax-block" id="guide-c">
+<span class="tp">int</span> <span class="vr">x</span> <span class="op">=</span> <span class="nm">5</span>;              <span class="cm">// declare and assign</span>
+<span class="fn">printf</span>(<span class="str">"%d"</span>, <span class="vr">x</span>);        <span class="cm">// print</span>
+<span class="kw">if</span> (<span class="vr">x</span> <span class="op">></span> <span class="nm">5</span>) { ... }      <span class="cm">// if block</span>
+<span class="kw">while</span> (<span class="vr">x</span> <span class="op"><</span> <span class="nm">10</span>) { ... }
+<span class="kw">for</span> (<span class="tp">int</span> <span class="vr">i</span><span class="op">=</span><span class="nm">0</span>; <span class="vr">i</span><span class="op"><</span><span class="nm">5</span>; <span class="vr">i</span>++) { ... }
+<span class="kw">return</span> <span class="vr">x</span>;
+</div>
+        <div class="syntax-block" id="guide-cpp">
+<span class="tp">auto</span> <span class="vr">x</span> <span class="op">=</span> <span class="nm">5</span>;              <span class="cm">// auto type deduction</span>
+<span class="fn">cout</span> <span class="op"><<</span> <span class="vr">x</span> <span class="op"><<</span> <span class="fn">endl</span>;       <span class="cm">// print</span>
+<span class="kw">if</span> (<span class="vr">x</span> <span class="op">></span> <span class="nm">5</span>) { ... }
+<span class="kw">for</span> (<span class="tp">auto</span> <span class="vr">i</span><span class="op">=</span><span class="nm">0</span>; <span class="vr">i</span><span class="op"><</span><span class="nm">5</span>; <span class="vr">i</span>++) { ... }
+<span class="kw">return</span> <span class="nm">0</span>;
+</div>
+        <div class="syntax-block" id="guide-java">
+<span class="tp">int</span> <span class="vr">x</span> <span class="op">=</span> <span class="nm">5</span>;
+<span class="fn">System</span>.<span class="fn">out</span>.<span class="fn">println</span>(<span class="vr">x</span>);   <span class="cm">// print</span>
+<span class="kw">if</span> (<span class="vr">x</span> <span class="op">></span> <span class="nm">5</span>) { ... }
+<span class="kw">for</span> (<span class="tp">int</span> <span class="vr">i</span><span class="op">=</span><span class="nm">0</span>; <span class="vr">i</span><span class="op"><</span><span class="nm">5</span>; <span class="vr">i</span>++) { ... }
+<span class="kw">return</span>;
+</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- EDITOR PANEL -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title">
+          <div class="title-dot td-amber"></div>
+          Source Code
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="examples-toggle" onclick="toggleExamples()">Examples ▾</button>
+          <span id="lang-pill" class="nbadge nb-py" style="font-size:.58rem"><span class="ndot"></span>python</span>
+        </div>
+      </div>
+      <div class="examples-drawer" id="ex-drawer">
+        <div class="ex-inner">
+          <div class="ex-label">Load example snippet</div>
+          <div class="ex-grid" id="ex-grid"></div>
+        </div>
+      </div>
+      <div class="editor-wrap">
+        <div class="line-nums" id="lnums"><span>1</span></div>
+        <textarea id="src" spellcheck="false" autocorrect="off" autocapitalize="off"
+          placeholder="// Type or paste your code here…&#10;// or load an example above"></textarea>
+      </div>
+      <div class="run-bar">
+        <button class="btn-run" id="btn-run" onclick="transpile()">
+          <svg viewBox="0 0 12 12" fill="currentColor"><path d="M2 1l8 5-8 5V1z"/></svg>
+          Transpile
+        </button>
+        <button class="btn-secondary" onclick="clearAll()">Clear</button>
+        <span class="kbd">Ctrl+Enter</span>
+        <span class="status" id="status">READY</span>
+      </div>
+    </div>
+
+    <!-- IR TABLE PANEL -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title">
+          <div class="title-dot td-acc"></div>
+          Intermediate Representation
+        </div>
+        <span class="ir-badge">IRNode[]</span>
+      </div>
+      <div class="ir-scroll" id="ir-scroll">
+        <table class="ir-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Type</th><th>dest</th>
+              <th>src1</th><th>op</th><th>src2</th><th>dtype</th>
+            </tr>
+          </thead>
+          <tbody id="ir-body">
+            <tr>
+              <td colspan="7" class="ph-txt" style="padding:28px 10px">
+                IR nodes will appear here after transpiling…
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- .main-grid -->
+
+  <!-- ERRORS -->
+  <div class="err-wrap" id="err-wrap">
+    <div class="err-box">
+      <div class="err-title">⚠ Transpiler Error</div>
+      <div id="err-box"></div>
+    </div>
+  </div>
+
+  <!-- DIFF VIEW -->
+  <div class="diff-wrap" id="diff-wrap">
+    <div class="diff-hd">
+      <span class="diff-title">Side-by-Side Diff</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select class="diff-sel" id="diff-lang">
+          <option value="python">→ Python</option>
+          <option value="c">→ C</option>
+          <option value="cpp">→ C++</option>
+          <option value="java">→ Java</option>
+        </select>
+        <button class="btn-icon" onclick="document.getElementById('diff-wrap').classList.remove('show')">✕</button>
+      </div>
+    </div>
+    <div class="diff-grid">
+      <div class="diff-pane">
+        <div class="diff-pane-hd" id="diff-src-lbl">Source</div>
+        <div id="diff-src"></div>
+      </div>
+      <div class="diff-pane">
+        <div class="diff-pane-hd" id="diff-dst-lbl">Output</div>
+        <div id="diff-dst"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OUTPUT PANEL -->
+  <div class="panel out-panel">
+    <div class="panel-hd">
+      <div class="panel-title">
+        <div class="title-dot td-ice"></div>
+        Generated Output
+      </div>
+      <button class="examples-toggle" onclick="showDiff()" id="diff-btn" style="display:none">⇄ Diff View</button>
+    </div>
+    <div class="tab-bar">
+      <div class="tab on"  id="tab-python" onclick="switchTab('python')">
+        <div class="tdot" style="background:var(--py-col)"></div>output.py
+      </div>
+      <div class="tab"     id="tab-c"      onclick="switchTab('c')">
+        <div class="tdot" style="background:var(--c-col)"></div>output.c
+      </div>
+      <div class="tab"     id="tab-cpp"    onclick="switchTab('cpp')">
+        <div class="tdot" style="background:var(--cpp-col)"></div>output.cpp
+      </div>
+      <div class="tab"     id="tab-java"   onclick="switchTab('java')">
+        <div class="tdot" style="background:var(--java-col)"></div>Output.java
+      </div>
+      <div class="tab"     id="tab-tokens" onclick="switchTab('tokens')">
+        <div class="tdot" style="background:var(--violet)"></div>tokens
+      </div>
+    </div>
+    <div class="code-out on" id="out-python"><span class="ph-txt">// Python output appears after transpiling…</span></div>
+    <div class="code-out"    id="out-c"     ><span class="ph-txt">// C output appears after transpiling…</span></div>
+    <div class="code-out"    id="out-cpp"   ><span class="ph-txt">// C++ output appears after transpiling…</span></div>
+    <div class="code-out"    id="out-java"  ><span class="ph-txt">// Java output appears after transpiling…</span></div>
+    <div class="code-out"    id="out-tokens"><span class="ph-txt">// Token stream appears after transpiling…</span></div>
+    <div class="out-actions">
+      <button class="copy-btn" id="cpbtn" onclick="copyActive()">Copy</button>
+      <button class="dl-btn"   onclick="downloadActive()">Download</button>
+    </div>
+  </div>
+
+</div><!-- .app -->
+
+<script src="app.js"></script>
+</body>
+</html>

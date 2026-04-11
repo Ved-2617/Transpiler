@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Multi-Language Transpiler v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090e;--s1:#0d1017;--s2:#131820;--s3:#1a2030;
+  --b1:#1e2636;--b2:#28334a;--b3:#374158;
+  --tx:#cdd6f4;--t2:#7f8fb5;--t3:#4a5570;
+  --acc:#89dceb;--acc2:#a6e3a1;--acc3:#f38ba8;--acc4:#fab387;--acc5:#cba6f7;--acc6:#f9e2af;
+  --py:#3572A5;--c:#555555;--cpp:#f34b7d;--java:#b07219;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'DM Sans',sans-serif;
+  --r:10px;--r2:14px;
+}
+body{background:var(--bg);color:var(--tx);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+
+/* grid */
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background-image:linear-gradient(rgba(137,220,235,.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(137,220,235,.015) 1px,transparent 1px);
+  background-size:48px 48px;pointer-events:none}
+
+/* glow orbs */
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(140px);opacity:.08}
+.o1{width:600px;height:600px;background:#89dceb;top:-200px;left:-150px}
+.o2{width:500px;height:500px;background:#cba6f7;bottom:-150px;right:-100px}
+.o3{width:300px;height:300px;background:#a6e3a1;top:40%;left:40%;transform:translate(-50%,-50%)}
+
+.app{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:0 20px 60px}
+
+/* ── HEADER ── */
+header{display:flex;align-items:center;justify-content:space-between;
+  padding:20px 0 24px;border-bottom:1px solid var(--b1);margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-icon{width:42px;height:42px;border-radius:10px;
+  background:linear-gradient(135deg,var(--acc),var(--acc5));
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:15px;font-weight:700;color:#000;flex-shrink:0}
+.brand-name{font-size:1.1rem;font-weight:700;letter-spacing:-.02em}
+.brand-name span{color:var(--acc)}
+.brand-sub{font-family:var(--mono);font-size:.6rem;color:var(--t3);letter-spacing:.06em;margin-top:2px}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{padding:3px 9px;border-radius:99px;font-family:var(--mono);
+  font-size:.6rem;font-weight:700;letter-spacing:.05em;border:1px solid}
+.b-py{border-color:var(--py);color:var(--py);background:rgba(53,114,165,.1)}
+.b-c{border-color:#888;color:#aaa;background:rgba(100,100,100,.1)}
+.b-cpp{border-color:var(--cpp);color:var(--cpp);background:rgba(243,75,125,.1)}
+.b-java{border-color:var(--java);color:#d4a017;background:rgba(176,114,25,.1)}
+
+/* ── LANG SELECTOR BAR ── */
+.lang-bar{display:flex;align-items:center;gap:0;margin-bottom:20px;
+  background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);
+  padding:6px;flex-wrap:wrap;gap:4px}
+.lang-label{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--t3);padding:0 10px;white-space:nowrap}
+.lang-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;
+  border:1px solid transparent;font-family:var(--sans);font-size:.78rem;font-weight:600;
+  cursor:pointer;background:transparent;color:var(--t2);transition:all .2s;white-space:nowrap}
+.lang-btn:hover{background:var(--s2);color:var(--tx)}
+.lang-btn.active{border-color:var(--b2);background:var(--s3);color:var(--tx)}
+.lang-btn .ldot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.lang-btn[data-lang="python"] .ldot{background:var(--py)}
+.lang-btn[data-lang="c"]      .ldot{background:#888}
+.lang-btn[data-lang="cpp"]    .ldot{background:var(--cpp)}
+.lang-btn[data-lang="java"]   .ldot{background:#d4a017}
+.lang-btn.active[data-lang="python"]{border-color:rgba(53,114,165,.5);background:rgba(53,114,165,.08)}
+.lang-btn.active[data-lang="c"]     {border-color:rgba(120,120,120,.4);background:rgba(100,100,100,.08)}
+.lang-btn.active[data-lang="cpp"]   {border-color:rgba(243,75,125,.4);background:rgba(243,75,125,.08)}
+.lang-btn.active[data-lang="java"]  {border-color:rgba(176,114,25,.4);background:rgba(176,114,25,.08)}
+
+/* ── PIPELINE ── */
+.pipeline{display:flex;align-items:center;gap:0;margin-bottom:24px;overflow-x:auto;padding:12px 16px;
+  background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2)}
+.ph{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;
+  border:1px solid transparent;flex-shrink:0;transition:all .3s}
+.ph.on{border-color:rgba(137,220,235,.3);background:rgba(137,220,235,.07)}
+.ph-n{width:20px;height:20px;border-radius:50%;background:var(--b2);color:var(--t3);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:.58rem;font-weight:700;transition:all .3s;flex-shrink:0}
+.ph.on .ph-n{background:var(--acc);color:#000}
+.ph-l{font-size:.7rem;font-weight:600;color:var(--t2);white-space:nowrap;transition:color .3s}
+.ph.on .ph-l{color:var(--acc)}
+.arr{width:20px;height:1px;background:var(--b2);flex-shrink:0;transition:background .3s}
+.arr.on{background:rgba(137,220,235,.4)}
+
+/* ── STATS ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+@media(max-width:700px){.stats{grid-template-columns:1fr 1fr}}
+.stat{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:12px 14px;
+  transition:border-color .3s}
+.stat.pulse{border-color:var(--acc);animation:pulse .6s ease}
+@keyframes pulse{0%,100%{border-color:var(--b1)}50%{border-color:var(--acc)}}
+.sv{font-size:1.5rem;font-weight:700;letter-spacing:-.04em;font-family:var(--mono)}
+.sl{font-size:.62rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);margin-top:2px}
+
+/* ── MAIN LAYOUT ── */
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:960px){.layout{grid-template-columns:1fr}}
+
+/* ── PANELS ── */
+.panel{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);
+  overflow:hidden;display:flex;flex-direction:column}
+.ph-hd{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;border-bottom:1px solid var(--b1);background:var(--s2)}
+.ph-title{display:flex;align-items:center;gap:6px;font-size:.65rem;
+  font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--t2)}
+.dot{width:7px;height:7px;border-radius:50%}
+.d-acc{background:var(--acc)} .d-a2{background:var(--acc2)} .d-a3{background:var(--acc3)}
+.d-a4{background:var(--acc4)} .d-a5{background:var(--acc5)} .d-a6{background:var(--acc6)}
+
+/* ── EDITOR ── */
+.ed-wrap{position:relative;flex:1}
+.lnums{position:absolute;left:0;top:0;bottom:0;width:38px;
+  padding:14px 6px 14px 0;display:flex;flex-direction:column;align-items:flex-end;
+  border-right:1px solid var(--b1);background:var(--s2);pointer-events:none;z-index:1;overflow:hidden}
+.lnums span{font-family:var(--mono);font-size:.65rem;color:var(--b3);line-height:1.58rem;min-height:1.58rem}
+textarea{width:100%;height:310px;background:transparent;color:var(--tx);
+  font-family:var(--mono);font-size:.78rem;line-height:1.58rem;
+  border:none;outline:none;resize:none;padding:14px 14px 14px 50px;caret-color:var(--acc)}
+textarea::selection{background:rgba(137,220,235,.12)}
+textarea::placeholder{color:var(--b3)}
+
+/* ── EXAMPLES DRAWER ── */
+.examples-btn{padding:5px 10px;font-family:var(--mono);font-size:.62rem;
+  border:1px solid var(--b2);border-radius:6px;background:transparent;color:var(--t2);
+  cursor:pointer;transition:all .15s}
+.examples-btn:hover{border-color:var(--acc5);color:var(--acc5)}
+.examples-drawer{display:none;border-top:1px solid var(--b1);background:var(--s2);padding:10px 14px}
+.examples-drawer.open{display:block}
+.ex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;margin-top:8px}
+.ex-title{font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
+.ex-btn{padding:6px 10px;background:var(--s3);border:1px solid var(--b2);border-radius:6px;
+  font-family:var(--sans);font-size:.72rem;color:var(--t2);cursor:pointer;transition:all .15s;text-align:left}
+.ex-btn:hover{border-color:var(--acc5);color:var(--tx);background:var(--b1)}
+.ex-btn .ex-lang{font-family:var(--mono);font-size:.58rem;font-weight:700;
+  display:block;margin-bottom:2px;opacity:.7}
+
+/* ── RUN BAR ── */
+.run-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;
+  border-top:1px solid var(--b1);background:var(--s2);flex-wrap:wrap}
+.btn-run{display:flex;align-items:center;gap:8px;padding:10px 22px;
+  background:var(--acc);color:#000;font-family:var(--sans);font-size:.78rem;font-weight:700;
+  border:none;border-radius:8px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-run:hover:not(:disabled){background:#9de8f0;transform:translateY(-1px)}
+.btn-run:disabled{opacity:.35;cursor:not-allowed}
+.btn-run svg{width:13px;height:13px;flex-shrink:0}
+.btn-clr{padding:9px 14px;background:transparent;border:1px solid var(--b2);border-radius:8px;
+  color:var(--t2);font-family:var(--sans);font-size:.73rem;cursor:pointer;transition:all .2s}
+.btn-clr:hover{border-color:var(--acc3);color:var(--acc3)}
+.shortcut{font-family:var(--mono);font-size:.62rem;padding:3px 8px;background:var(--s3);
+  border:1px solid var(--b2);border-radius:4px;color:var(--t3)}
+.status{font-family:var(--mono);font-size:.65rem;color:var(--t3);margin-left:auto}
+.status.run{color:var(--acc)}
+.status.err{color:var(--acc3)}
+.status.ok {color:var(--acc2)}
+
+/* ── SPINNER ── */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{width:13px;height:13px;border:2px solid rgba(0,0,0,.2);border-top-color:#000;
+  border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+
+/* ── IR TABLE ── */
+.ir-scroll{overflow:auto;flex:1;padding:0 14px 14px}
+table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.7rem}
+thead tr{border-bottom:1px solid var(--b2)}
+th{text-align:left;padding:8px 8px;font-size:.58rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--t3);font-weight:700;white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid var(--b1);white-space:nowrap;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(255,255,255,.015)}
+.irt{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;
+  font-size:.58rem;font-weight:700;letter-spacing:.05em}
+.ia{background:rgba(137,220,235,.1);color:var(--acc)}
+.ib{background:rgba(249,226,175,.1);color:var(--acc6)}
+.ip{background:rgba(166,227,161,.1);color:var(--acc2)}
+.ii{background:rgba(243,139,168,.1);color:var(--acc3)}
+.iw{background:rgba(203,166,247,.1);color:var(--acc5)}
+.iff{background:rgba(250,179,135,.1);color:var(--acc4)}
+.ir2{background:rgba(137,220,235,.07);color:var(--t2)}
+
+/* ── OUTPUT PANEL ── */
+.tab-bar{display:flex;gap:2px;padding:8px 14px 0;border-bottom:1px solid var(--b1);
+  background:var(--s2);overflow-x:auto}
+.tab{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:7px 7px 0 0;
+  border:1px solid transparent;border-bottom:none;font-size:.68rem;font-weight:600;
+  cursor:pointer;transition:all .15s;white-space:nowrap;background:transparent;color:var(--t2);
+  margin-bottom:-1px}
+.tab:hover{color:var(--tx);background:var(--s1)}
+.tab.on{border-color:var(--b1);border-bottom-color:var(--s1);background:var(--s1);color:var(--tx)}
+.tab .tdot{width:5px;height:5px;border-radius:50%;opacity:.4}
+.tab.on .tdot{opacity:1}
+.code-out{display:none;padding:14px;font-family:var(--mono);font-size:.76rem;line-height:1.72;
+  color:var(--tx);white-space:pre;overflow-x:auto;min-height:180px}
+.code-out.on{display:block}
+.ph-txt{color:var(--b3);font-style:italic;font-family:var(--sans);font-size:.8rem}
+.out-actions{display:flex;align-items:center;gap:6px;padding:0 14px 10px;justify-content:flex-end}
+.copy-btn,.dl-btn{padding:4px 10px;font-family:var(--mono);font-size:.62rem;
+  border:1px solid var(--b2);border-radius:5px;background:transparent;cursor:pointer;transition:all .15s}
+.copy-btn{color:var(--t2)}
+.copy-btn:hover{border-color:var(--acc);color:var(--acc)}
+.copy-btn.ok{border-color:var(--acc2);color:var(--acc2)}
+.dl-btn{color:var(--t2)}
+.dl-btn:hover{border-color:var(--acc5);color:var(--acc5)}
+
+/* ── ERRORS ── */
+.err-wrap{display:none;padding:0 20px 0}
+.err-wrap.show{display:block;margin-bottom:14px}
+.err-box{padding:10px 14px;background:rgba(243,139,168,.06);border:1px solid rgba(243,139,168,.25);
+  border-radius:8px;font-family:var(--mono);font-size:.7rem;color:var(--acc3);line-height:1.7}
+
+/* ── SYNTAX GUIDE (collapsible) ── */
+.guide-wrap{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);
+  margin-bottom:16px;overflow:hidden}
+.guide-header{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;cursor:pointer;user-select:none}
+.guide-title{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
+.guide-toggle{font-size:.7rem;color:var(--t3);font-family:var(--mono);transition:transform .2s}
+.guide-toggle.open{transform:rotate(180deg)}
+.guide-body{display:none;padding:0 16px 14px;border-top:1px solid var(--b1)}
+.guide-body.open{display:block}
+.lang-tabs-guide{display:flex;gap:4px;margin-bottom:10px;padding-top:12px}
+.lgt{padding:5px 12px;border-radius:6px;font-size:.68rem;font-weight:600;
+  border:1px solid var(--b2);background:transparent;color:var(--t2);cursor:pointer;transition:all .15s}
+.lgt.on{background:var(--s3);color:var(--tx);border-color:var(--b3)}
+.syntax-block{display:none;font-family:var(--mono);font-size:.72rem;line-height:1.9;color:var(--t2)}
+.syntax-block.on{display:block}
+.syntax-block .kw{color:var(--acc5)} .syntax-block .cm{color:var(--t3);font-style:italic}
+.syntax-block .vr{color:var(--acc)} .syntax-block .nm{color:var(--acc6)}
+.syntax-block .op{color:var(--acc2)}
+
+/* ── DIFF VIEW ── */
+.diff-wrap{display:none;background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);
+  margin-bottom:16px;overflow:hidden}
+.diff-wrap.show{display:block}
+.diff-hd{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;border-bottom:1px solid var(--b1);background:var(--s2)}
+.diff-title{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
+.diff-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+@media(max-width:800px){.diff-grid{grid-template-columns:1fr}}
+.diff-pane{padding:14px;font-family:var(--mono);font-size:.72rem;line-height:1.7;
+  border-right:1px solid var(--b1);white-space:pre;overflow-x:auto}
+.diff-pane:last-child{border-right:none}
+.diff-pane-hd{font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--t3);margin-bottom:8px}
+
+/* ── SYNTAX HIGHLIGHT CLASSES ── */
+.kw{color:#cba6f7} .fn{color:#89dceb} .str{color:#a6e3a1} .num{color:#f9e2af}
+.cm{color:#45475a;font-style:italic} .tp{color:#89b4fa} .op{color:#89dceb}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.fu{animation:fadeUp .22s ease forwards}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--b3)}
+</style>
+</head>
+<body>
+<div class="o1 orb"></div><div class="o2 orb"></div><div class="o3 orb"></div>
+
+<div class="app">
+
+<!-- HEADER -->
+<header>
+  <div class="brand">
+    <div class="brand-icon">IR</div>
+    <div>
+      <div class="brand-name">Multi-Language <span>Transpiler</span></div>
+      <div class="brand-sub">Lexer → Parser → IR → Code Gen · Powered by C</div>
+    </div>
+  </div>
+  <div class="badges">
+    <span class="badge b-py">Python</span>
+    <span class="badge b-c">C</span>
+    <span class="badge b-cpp">C++</span>
+    <span class="badge b-java">Java</span>
+  </div>
+</header>
+
+<!-- SOURCE LANGUAGE SELECTOR -->
+<div class="lang-bar">
+  <span class="lang-label">Input Language →</span>
+  <button class="lang-btn active" data-lang="python" onclick="setLang(this)">
+    <div class="ldot"></div>Python / Custom
+  </button>
+  <button class="lang-btn" data-lang="c" onclick="setLang(this)">
+    <div class="ldot"></div>C
+  </button>
+  <button class="lang-btn" data-lang="cpp" onclick="setLang(this)">
+    <div class="ldot"></div>C++
+  </button>
+  <button class="lang-btn" data-lang="java" onclick="setLang(this)">
+    <div class="ldot"></div>Java
+  </button>
+</div>
+
+<!-- PIPELINE -->
+<div class="pipeline" id="pipeline">
+  <div class="ph" id="ph0"><div class="ph-n">1</div><span class="ph-l">Lexer</span></div>
+  <div class="arr" id="ar0"></div>
+  <div class="ph" id="ph1"><div class="ph-n">2</div><span class="ph-l">Parser</span></div>
+  <div class="arr" id="ar1"></div>
+  <div class="ph" id="ph2"><div class="ph-n">3</div><span class="ph-l">IR Builder</span></div>
+  <div class="arr" id="ar2"></div>
+  <div class="ph" id="ph3"><div class="ph-n">4</div><span class="ph-l">Code Gen ×4</span></div>
+  <div class="arr" id="ar3"></div>
+  <div class="ph" id="ph4"><div class="ph-n">5</div><span class="ph-l">Output</span></div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat" id="st0"><div class="sv" id="sv0" style="color:var(--acc)">—</div><div class="sl">Tokens</div></div>
+  <div class="stat" id="st1"><div class="sv" id="sv1" style="color:var(--acc6)">—</div><div class="sl">IR Nodes</div></div>
+  <div class="stat" id="st2"><div class="sv" id="sv2" style="color:var(--acc2)">—</div><div class="sl">Lines Generated</div></div>
+  <div class="stat" id="st3"><div class="sv" id="sv3" style="color:var(--acc5)">4</div><div class="sl">Target Languages</div></div>
+</div>
+
+<!-- SYNTAX GUIDE -->
+<div class="guide-wrap">
+  <div class="guide-header" onclick="toggleGuide()">
+    <span class="guide-title">Syntax Reference — click to expand</span>
+    <span class="guide-toggle" id="guide-toggle">▼</span>
+  </div>
+  <div class="guide-body" id="guide-body">
+    <div class="lang-tabs-guide">
+      <button class="lgt on" onclick="showGuide('python',this)">Python/Custom</button>
+      <button class="lgt" onclick="showGuide('c',this)">C</button>
+      <button class="lgt" onclick="showGuide('cpp',this)">C++</button>
+      <button class="lgt" onclick="showGuide('java',this)">Java</button>
+    </div>
+    <div class="syntax-block on" id="guide-python">
+<span class="vr">x</span> <span class="op">=</span> <span class="nm">5</span>             <span class="cm"># assign number</span>
+<span class="vr">z</span> <span class="op">=</span> <span class="vr">x</span> <span class="op">+</span> <span class="vr">y</span>          <span class="cm"># arithmetic  (+  -  *  /  %)</span>
+<span class="kw">print</span> <span class="vr">x</span>             <span class="cm"># print (or print(x))</span>
+<span class="kw">if</span> <span class="vr">x</span> <span class="op">></span> <span class="nm">5</span> <span class="op">:</span>          <span class="cm"># if condition  (>  <  ==  !=  >=  <=)</span>
+    <span class="vr">y</span> <span class="op">=</span> <span class="vr">x</span> <span class="op">*</span> <span class="nm">2</span>
+<span class="kw">else</span> <span class="op">:</span>
+    <span class="vr">y</span> <span class="op">=</span> <span class="nm">0</span>
+<span class="kw">while</span> <span class="vr">x</span> <span class="op"><</span> <span class="nm">10</span> <span class="op">:</span>
+    <span class="vr">x</span> <span class="op">=</span> <span class="vr">x</span> <span class="op">+</span> <span class="nm">1</span>
+<span class="kw">return</span> <span class="vr">x</span>
+</div>
+    <div class="syntax-block" id="guide-c">
+<span class="tp">int</span> <span class="vr">x</span> <span class="op">=</span> <span class="nm">5</span>;              <span class="cm">// declare and assign</span>
+<span class="vr">x</span> <span class="op">=</span> <span class="vr">a</span> <span class="op">+</span> <span class="vr">b</span>;              <span class="cm">// arithmetic</span>
+<span class="fn">printf</span>(<span class="str">"%d"</span>, <span class="vr">x</span>);        <span class="cm">// print → IR_PRINT</span>
+<span class="kw">if</span> (<span class="vr">x</span> <span class="op">></span> <span class="nm">5</span>) { ... }      <span class="cm">// if block</span>
+<span class="kw">else</span> { ... }
+<span class="kw">while</span> (<span class="vr">x</span> <span class="op"><</span> <span class="nm">10</span>) { ... }
+<span class="kw">for</span> (<span class="tp">int</span> <span class="vr">i</span><span class="op">=</span><span class="nm">0</span>; <span class="vr">i</span><span class="op"><</span><span class="nm">5</span>; <span class="vr">i</span>++) { ... }
+<span class="kw">return</span> <span class="vr">x</span>;
+</div>
+    <div class="syntax-block" id="guide-cpp">
+<span class="tp">auto</span> <span class="vr">x</span> <span class="op">=</span> <span class="nm">5</span>;              <span class="cm">// auto type deduction</span>
+<span class="tp">int</span> <span class="vr">y</span> <span class="op">=</span> <span class="vr">x</span> <span class="op">+</span> <span class="nm">3</span>;
+<span class="fn">cout</span> <span class="op"><<</span> <span class="vr">x</span> <span class="op"><<</span> <span class="fn">endl</span>;       <span class="cm">// print → IR_PRINT</span>
+<span class="kw">if</span> (<span class="vr">x</span> <span class="op">></span> <span class="nm">5</span>) { ... }
+<span class="kw">while</span> (<span class="vr">x</span> <span class="op"><</span> <span class="nm">10</span>) { ... }
+<span class="kw">for</span> (<span class="tp">auto</span> <span class="vr">i</span><span class="op">=</span><span class="nm">0</span>; <span class="vr">i</span><span class="op"><</span><span class="nm">5</span>; <span class="vr">i</span>++) { ... }
+<span class="kw">return</span> <span class="nm">0</span>;
+</div>
+    <div class="syntax-block" id="guide-java">
+<span class="tp">int</span> <span class="vr">x</span> <span class="op">=</span> <span class="nm">5</span>;
+<span class="tp">int</span> <span class="vr">z</span> <span class="op">=</span> <span class="vr">x</span> <span class="op">+</span> <span class="vr">y</span>;
+<span class="fn">System</span>.<span class="fn">out</span>.<span class="fn">println</span>(<span class="vr">x</span>);   <span class="cm">// print → IR_PRINT</span>
+<span class="kw">if</span> (<span class="vr">x</span> <span class="op">></span> <span class="nm">5</span>) { ... }
+<span class="kw">while</span> (<span class="vr">x</span> <span class="op"><</span> <span class="nm">20</span>) { ... }
+<span class="kw">for</span> (<span class="tp">int</span> <span class="vr">i</span><span class="op">=</span><span class="nm">0</span>; <span class="vr">i</span><span class="op"><</span><span class="nm">5</span>; <span class="vr">i</span>++) { ... }
+<span class="kw">return</span>;
+</div>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT: Editor + IR -->
+<div class="layout">
+
+  <!-- Editor -->
+  <div class="panel">
+    <div class="ph-hd">
+      <div class="ph-title"><div class="dot d-a6"></div>Source Code</div>
+      <div style="display:flex;gap:6px">
+        <button class="examples-btn" onclick="toggleExamples()">Examples ▾</button>
+        <span id="lang-pill" class="badge b-py" style="font-size:.6rem">python</span>
+      </div>
+    </div>
+    <!-- Examples drawer -->
+    <div class="examples-drawer" id="ex-drawer">
+      <div class="ex-title">Load example:</div>
+      <div class="ex-grid" id="ex-grid"></div>
+    </div>
+    <div class="ed-wrap">
+      <div class="lnums" id="lnums"><span>1</span></div>
+      <textarea id="src" spellcheck="false" autocorrect="off" autocapitalize="off"
+        placeholder="Write your code here…"></textarea>
+    </div>
+    <div class="run-bar">
+      <button class="btn-run" id="btn-run" onclick="transpile()">
+        <svg viewBox="0 0 13 13" fill="currentColor"><path d="M2 1.5l9 5-9 5V1.5z"/></svg>
+        Transpile
+      </button>
+      <button class="btn-clr" onclick="clearAll()">Clear</button>
+      <span class="shortcut">Ctrl+Enter</span>
+      <span class="status" id="status">Ready</span>
+    </div>
+  </div>
+
+  <!-- IR Table -->
+  <div class="panel">
+    <div class="ph-hd">
+      <div class="ph-title"><div class="dot d-acc"></div>Intermediate Representation</div>
+      <span class="badge" style="border-color:var(--acc);color:var(--acc);background:rgba(137,220,235,.07);font-size:.58rem">IRNode[]</span>
+    </div>
+    <div class="ir-scroll" id="ir-scroll">
+      <table>
+        <thead><tr><th>#</th><th>Type</th><th>dest</th><th>src1</th><th>op</th><th>src2</th><th>dtype</th></tr></thead>
+        <tbody id="ir-body">
+          <tr><td colspan="7" class="ph-txt" style="padding:20px 8px">IR nodes appear here after transpiling…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ERRORS -->
+<div class="err-wrap" id="err-wrap">
+  <div class="err-box" id="err-box"></div>
+</div>
+
+<!-- DIFF VIEW (source vs target) -->
+<div class="diff-wrap" id="diff-wrap">
+  <div class="diff-hd">
+    <span class="diff-title">Side-by-side diff view</span>
+    <div style="display:flex;gap:6px">
+      <select id="diff-lang" style="background:var(--s3);border:1px solid var(--b2);color:var(--t2);border-radius:5px;padding:3px 8px;font-size:.68rem;font-family:var(--sans)">
+        <option value="python">→ Python</option>
+        <option value="c">→ C</option>
+        <option value="cpp">→ C++</option>
+        <option value="java">→ Java</option>
+      </select>
+      <button onclick="document.getElementById('diff-wrap').classList.remove('show')" style="background:transparent;border:1px solid var(--b2);color:var(--t2);border-radius:5px;padding:3px 8px;font-size:.65rem;cursor:pointer">✕</button>
+    </div>
+  </div>
+  <div class="diff-grid">
+    <div class="diff-pane"><div class="diff-pane-hd" id="diff-src-lbl">Source</div><div id="diff-src"></div></div>
+    <div class="diff-pane"><div class="diff-pane-hd" id="diff-dst-lbl">Output</div><div id="diff-dst"></div></div>
+  </div>
+</div>
+
+<!-- OUTPUT PANEL -->
+<div class="panel out-panel">
+  <div class="ph-hd">
+    <div class="ph-title"><div class="dot d-a2"></div>Generated Output</div>
+    <div style="display:flex;gap:6px">
+      <button class="examples-btn" onclick="showDiff()" id="diff-btn" style="display:none">⇄ Diff</button>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab on"  id="tab-python" onclick="switchTab('python')"><div class="tdot" style="background:var(--py)"></div>output.py</div>
+    <div class="tab"     id="tab-c"      onclick="switchTab('c')"     ><div class="tdot" style="background:#888"></div>output.c</div>
+    <div class="tab"     id="tab-cpp"    onclick="switchTab('cpp')"   ><div class="tdot" style="background:var(--cpp)"></div>output.cpp</div>
+    <div class="tab"     id="tab-java"   onclick="switchTab('java')"  ><div class="tdot" style="background:#d4a017"></div>Output.java</div>
+    <div class="tab"     id="tab-tokens" onclick="switchTab('tokens')"><div class="tdot" style="background:var(--acc5)"></div>token-list</div>
+  </div>
+  <div class="code-out on" id="out-python"><span class="ph-txt">Python output appears here…</span></div>
+  <div class="code-out"    id="out-c"     ><span class="ph-txt">C output appears here…</span></div>
+  <div class="code-out"    id="out-cpp"   ><span class="ph-txt">C++ output appears here…</span></div>
+  <div class="code-out"    id="out-java"  ><span class="ph-txt">Java output appears here…</span></div>
+  <div class="code-out"    id="out-tokens"><span class="ph-txt">Token list appears here…</span></div>
+  <div class="out-actions">
+    <button class="copy-btn" id="cpbtn" onclick="copyActive()">Copy</button>
+    <button class="dl-btn" onclick="downloadActive()">Download</button>
+  </div>
+</div>
+
+</div><!-- .app -->
+
+<script>
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+let currentLang = 'python';
+let lastData = null;
+
+const LANG_COLORS = {python:'var(--py)',c:'#888',cpp:'var(--cpp)',java:'#d4a017'};
+const LANG_EXTS   = {python:'py',c:'c',cpp:'cpp',java:'java'};
+const TAB_IDS     = ['python','c','cpp','java','tokens'];
+
+/* ═══════════════════════════════════════════════════
+   EXAMPLE PROGRAMS
+═══════════════════════════════════════════════════ */
+const EXAMPLES = {
+  python: [
+    { label:'Arithmetic', code:`x = 10\ny = 3\nz = x + y\nresult = z * y\nprint z\nprint result` },
+    { label:'If/Else',    code:`a = 15\nb = 10\nif a > b\n    big = a\nelse\n    big = b\nprint big` },
+    { label:'While loop', code:`x = 1\nsum = 0\nwhile x < 6\n    sum = sum + x\n    x = x + 1\nprint sum` },
+  ],
+  c: [
+    { label:'Arithmetic', code:`#include <stdio.h>\nint main() {\n    int x = 10;\n    int y = 3;\n    int z = x + y;\n    printf("%d", z);\n    return 0;\n}` },
+    { label:'If/Else',    code:`#include <stdio.h>\nint main() {\n    int a = 15;\n    int b = 10;\n    if (a > b) {\n        int big = a;\n        printf("%d", big);\n    } else {\n        printf("%d", b);\n    }\n    return 0;\n}` },
+    { label:'For loop',   code:`#include <stdio.h>\nint main() {\n    int sum = 0;\n    for (int i = 1; i < 6; i++) {\n        sum = sum + i;\n    }\n    printf("%d", sum);\n    return 0;\n}` },
+  ],
+  cpp: [
+    { label:'Arithmetic', code:`#include <iostream>\nusing namespace std;\nint main() {\n    auto x = 10;\n    auto y = 3;\n    auto z = x + y;\n    cout << z << endl;\n    return 0;\n}` },
+    { label:'If/While',   code:`#include <iostream>\nusing namespace std;\nint main() {\n    int x = 1;\n    int s = 0;\n    while (x < 6) {\n        s = s + x;\n        x = x + 1;\n    }\n    cout << s << endl;\n    return 0;\n}` },
+    { label:'For loop',   code:`#include <iostream>\nusing namespace std;\nint main() {\n    for (auto i = 0; i < 5; i++) {\n        auto sq = i * i;\n        cout << sq << endl;\n    }\n    return 0;\n}` },
+  ],
+  java: [
+    { label:'Arithmetic', code:`public class Test {\n    public static void main(String[] args) {\n        int x = 10;\n        int y = 3;\n        int z = x + y;\n        System.out.println(z);\n    }\n}` },
+    { label:'If/Else',    code:`public class Test {\n    public static void main(String[] args) {\n        int a = 20;\n        int b = 15;\n        if (a > b) {\n            int diff = a - b;\n            System.out.println(diff);\n        } else {\n            System.out.println(b);\n        }\n    }\n}` },
+    { label:'For loop',   code:`public class Test {\n    public static void main(String[] args) {\n        int sum = 0;\n        for (int i = 1; i < 6; i++) {\n            sum = sum + i;\n        }\n        System.out.println(sum);\n    }\n}` },
+  ],
+};
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+function init() {
+  buildExamples();
+  loadExample(EXAMPLES.python[0]);
+  updateLineNums();
+}
+
+function buildExamples() {
+  const grid = document.getElementById('ex-grid');
+  grid.innerHTML = '';
+  const exs = EXAMPLES[currentLang] || [];
+  exs.forEach(ex => {
+    const b = document.createElement('button');
+    b.className = 'ex-btn';
+    b.innerHTML = `<span class="ex-lang">${currentLang}</span>${ex.label}`;
+    b.onclick = () => { loadExample(ex); toggleExamples(false); };
+    grid.appendChild(b);
+  });
+}
+
+function loadExample(ex) {
+  document.getElementById('src').value = ex.code;
+  updateLineNums();
+}
+
+/* ═══════════════════════════════════════════════════
+   LANGUAGE SELECTION
+═══════════════════════════════════════════════════ */
+function setLang(btn) {
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentLang = btn.dataset.lang;
+
+  /* update pill */
+  const pill = document.getElementById('lang-pill');
+  pill.textContent = currentLang;
+  pill.className = 'badge b-' + (currentLang === 'cpp' ? 'cpp' : currentLang);
+
+  buildExamples();
+  /* auto-load first example */
+  const exs = EXAMPLES[currentLang];
+  if (exs && exs.length) loadExample(exs[0]);
+}
+
+/* ═══════════════════════════════════════════════════
+   PIPELINE ANIMATION
+═══════════════════════════════════════════════════ */
+function setPipeline(n) {
+  for(let i=0;i<5;i++) document.getElementById('ph'+i).classList.toggle('on',i<=n);
+  for(let i=0;i<4;i++) document.getElementById('ar'+i).classList.toggle('on',i<n);
+}
+function resetPipeline(){ for(let i=0;i<5;i++) document.getElementById('ph'+i).classList.remove('on'); for(let i=0;i<4;i++) document.getElementById('ar'+i).classList.remove('on'); }
+function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+/* ═══════════════════════════════════════════════════
+   MAIN TRANSPILE
+═══════════════════════════════════════════════════ */
+async function transpile() {
+  const src = document.getElementById('src').value.trim();
+  if (!src) return;
+
+  const btn = document.getElementById('btn-run');
+  const status = document.getElementById('status');
+  const errWrap = document.getElementById('err-wrap');
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spin"></div>Running C engine…';
+  status.className = 'status run'; status.textContent = 'Lexing…';
+  errWrap.className = 'err-wrap';
+  resetPipeline();
+
+  /* animate pipeline */
+  const steps = ['Lexing…','Parsing…','Building IR…','Generating code…','Done!'];
+  for (let i=0;i<4;i++) { await delay(100); setPipeline(i); status.textContent=steps[i]; }
+
+  let data;
+  try {
+    const res = await fetch('/transpile', {
+      method:'POST',
+      headers:{'Content-Type':'text/plain; charset=utf-8'},
+      body: currentLang + '\n' + src
+    });
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    data = await res.json();
+  } catch(e) {
+    status.textContent = 'Error: '+e.message; status.className='status err';
+    document.getElementById('err-box').textContent = '⚠ Server unreachable.\nMake sure server.py is running:\n  python3 server.py';
+    errWrap.className = 'err-wrap show';
+    btn.disabled=false; btn.innerHTML='<svg viewBox="0 0 13 13" fill="currentColor"><path d="M2 1.5l9 5-9 5V1.5z"/></svg>Transpile';
+    return;
+  }
+
+  lastData = data;
+
+  /* errors */
+  if (data.errors && data.errors.length) {
+    document.getElementById('err-box').textContent = data.errors.join('\n');
+    errWrap.className = 'err-wrap show';
+  }
+
+  await delay(100); setPipeline(4);
+
+  /* IR table */
+  const irMap = {IR_ASSIGN:'ia',IR_BINOP:'ib',IR_PRINT:'ip',IR_IF:'ii',IR_ELSE:'ii',
+                 IR_WHILE:'iw',IR_FOR:'iff',IR_RETURN:'ir2',IR_BLOCK_START:'ir2',IR_BLOCK_END:'ir2'};
+  const tbody = document.getElementById('ir-body');
+  tbody.innerHTML = '';
+  if (!data.ir || !data.ir.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="ph-txt" style="padding:16px 8px">No IR nodes generated.</td></tr>';
+  } else {
+    data.ir.forEach((n,i)=>{
+      const tr = document.createElement('tr');
+      tr.className='fu'; tr.style.animationDelay=(i*30)+'ms';
+      tr.innerHTML=`<td style="color:var(--t3)">${i}</td>
+        <td><span class="irt ${irMap[n.type]||'ir2'}">${n.type}</span></td>
+        <td style="color:var(--acc)">${esc(n.dest)||'—'}</td>
+        <td style="color:var(--acc2)">${esc(n.src1)||'—'}</td>
+        <td style="color:var(--acc6);font-weight:700">${esc(n.op)||'—'}</td>
+        <td style="color:var(--acc2)">${esc(n.src2)||'—'}</td>
+        <td style="color:var(--t3)">${esc(n.dtype)||'—'}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* token list */
+  const tokColours = {IDENT:'var(--tx)',NUMBER:'var(--acc6)',
+    PRINT:'var(--acc5)',IF:'var(--acc5)',ELSE:'var(--acc5)',WHILE:'var(--acc5)',FOR:'var(--acc5)',RETURN:'var(--acc5)',
+    INT:'var(--tp,#89b4fa)',FLOAT_KW:'var(--tp,#89b4fa)',CHAR_KW:'var(--tp,#89b4fa)',
+    AUTO:'var(--tp,#89b4fa)',VOID:'var(--tp,#89b4fa)',BOOL:'var(--tp,#89b4fa)',
+    ASSIGN:'var(--acc2)',PLUS:'var(--acc2)',MINUS:'var(--acc2)',STAR:'var(--acc2)',
+    SLASH:'var(--acc2)',GT:'var(--acc2)',LT:'var(--acc2)',EQ:'var(--acc2)',NEQ:'var(--acc2)',
+    LSHIFT:'var(--acc)',RSHIFT:'var(--acc)',COUT:'var(--acc3)',ENDL:'var(--acc3)',
+    STRING:'var(--acc2)',NUMBER_:'var(--acc6)'};
+  const tokLines = (data.tokens||[]).map((t,i)=>{
+    const col = tokColours[t.type]||'var(--t2)';
+    return `<span style="color:var(--t3)">${String(i).padStart(3,' ')}  </span>`
+         + `<span style="color:${col};font-weight:700">${t.type.padEnd(12,' ')}</span>`
+         + `  <span style="color:var(--acc2)">[${esc(t.lexeme)}]</span>`;
+  });
+  document.getElementById('out-tokens').innerHTML =
+    `<span style="color:var(--t3);font-size:.65rem">No.  Type            Lexeme\n${'─'.repeat(40)}\n</span>`+tokLines.join('\n');
+
+  /* code outputs with syntax highlighting */
+  document.getElementById('out-python').innerHTML = hlPy(data.python||'');
+  document.getElementById('out-c').innerHTML      = hlC(data.c||'');
+  document.getElementById('out-cpp').innerHTML    = hlCpp(data.cpp||'');
+  document.getElementById('out-java').innerHTML   = hlJava(data.java||'');
+
+  /* stats */
+  const lines = (data.python||'').split('\n').length + (data.c||'').split('\n').length +
+                (data.cpp||'').split('\n').length + (data.java||'').split('\n').length;
+  ['st0','st1','st2'].forEach(id=>{ document.getElementById(id).classList.add('pulse');
+    setTimeout(()=>document.getElementById(id).classList.remove('pulse'),700); });
+  countUp('sv0', (data.tokens||[]).length);
+  countUp('sv1', (data.ir||[]).length);
+  countUp('sv2', lines);
+
+  document.getElementById('diff-btn').style.display = 'inline-block';
+
+  btn.disabled=false; btn.innerHTML='<svg viewBox="0 0 13 13" fill="currentColor"><path d="M2 1.5l9 5-9 5V1.5z"/></svg>Transpile';
+  status.className='status ok'; status.textContent=`✓ ${(data.ir||[]).length} IR nodes · ${(data.tokens||[]).length} tokens`;
+}
+
+/* ═══════════════════════════════════════════════════
+   SYNTAX HIGHLIGHTERS
+═══════════════════════════════════════════════════ */
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+function hlPy(code){
+  return esc(code)
+    .replace(/\b(print|if|else|while|for|in|range|return|pass|def|and|or|not|True|False|None)\b/g,'<span class="kw">$1</span>')
+    .replace(/(#[^\n]*)/g,'<span class="cm">$1</span>')
+    .replace(/\b(\d+\.?\d*)\b/g,'<span class="num">$1</span>');
+}
+function hlC(code){
+  return esc(code)
+    .replace(/\b(int|float|char|void|double|auto|return|if|else|while|for|printf|scanf|include|define)\b/g,'<span class="kw">$1</span>')
+    .replace(/(\/\/[^\n]*)/g,'<span class="cm">$1</span>')
+    .replace(/(\/\*[\s\S]*?\*\/)/g,'<span class="cm">$1</span>')
+    .replace(/(#[a-z]+[^\n]*)/g,'<span class="cm">$1</span>')
+    .replace(/("(?:[^"\\]|\\.)*")/g,'<span class="str">$1</span>')
+    .replace(/\b(\d+\.?\d*)\b/g,'<span class="num">$1</span>');
+}
+function hlCpp(code){
+  return esc(code)
+    .replace(/\b(auto|int|float|char|void|double|return|if|else|while|for|cout|cin|endl|using|namespace|std|class|include)\b/g,'<span class="kw">$1</span>')
+    .replace(/(\/\/[^\n]*)/g,'<span class="cm">$1</span>')
+    .replace(/(#[a-z]+[^\n]*)/g,'<span class="cm">$1</span>')
+    .replace(/("(?:[^"\\]|\\.)*")/g,'<span class="str">$1</span>')
+    .replace(/\b(\d+\.?\d*)\b/g,'<span class="num">$1</span>');
+}
+function hlJava(code){
+  return esc(code)
+    .replace(/\b(public|class|static|void|int|float|double|if|else|while|for|return|new|String|System|out|println|false|true)\b/g,'<span class="kw">$1</span>')
+    .replace(/(\/\/[^\n]*)/g,'<span class="cm">$1</span>')
+    .replace(/("(?:[^"\\]|\\.)*")/g,'<span class="str">$1</span>')
+    .replace(/\b(\d+\.?\d*)\b/g,'<span class="num">$1</span>');
+}
+
+/* ═══════════════════════════════════════════════════
+   DIFF VIEW
+═══════════════════════════════════════════════════ */
+function showDiff(){
+  if(!lastData) return;
+  updateDiff();
+  document.getElementById('diff-wrap').classList.add('show');
+}
+function updateDiff(){
+  if(!lastData) return;
+  const lang = document.getElementById('diff-lang').value;
+  const src  = document.getElementById('src').value;
+  const dst  = lastData[lang]||'';
+  document.getElementById('diff-src').innerHTML = hlForLang(src, currentLang);
+  document.getElementById('diff-dst').innerHTML = hlForLang(dst, lang);
+  document.getElementById('diff-src-lbl').textContent = 'Source ('+currentLang+')';
+  document.getElementById('diff-dst-lbl').textContent = 'Output ('+lang+')';
+}
+document.addEventListener('change', e=>{ if(e.target.id==='diff-lang') updateDiff(); });
+
+function hlForLang(code, lang){
+  if(lang==='python'||lang==='custom') return hlPy(code);
+  if(lang==='c')    return hlC(code);
+  if(lang==='cpp')  return hlCpp(code);
+  if(lang==='java') return hlJava(code);
+  return esc(code);
+}
+
+/* ═══════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════ */
+function switchTab(t){
+  TAB_IDS.forEach(id=>{
+    document.getElementById('out-'+id).classList.toggle('on',id===t);
+    document.getElementById('tab-'+id).classList.toggle('on',id===t);
+  });
+}
+
+function copyActive(){
+  const el = document.querySelector('.code-out.on');
+  const text = el ? el.innerText : '';
+  navigator.clipboard.writeText(text).then(()=>{
+    const b=document.getElementById('cpbtn');
+    b.textContent='Copied!'; b.classList.add('ok');
+    setTimeout(()=>{ b.textContent='Copy'; b.classList.remove('ok'); },1500);
+  });
+}
+
+function downloadActive(){
+  if(!lastData) return;
+  const active = document.querySelector('.code-out.on');
+  if(!active) return;
+  const id = active.id.replace('out-','');
+  const exts = {python:'py',c:'c',cpp:'cpp',java:'java',tokens:'txt'};
+  const names = {python:'output',c:'output',cpp:'output',java:'Output',tokens:'tokens'};
+  const text = active.innerText;
+  const blob = new Blob([text], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=names[id]+'.'+(exts[id]||'txt'); a.click();
+}
+
+function clearAll(){
+  document.getElementById('src').value='';
+  document.getElementById('ir-body').innerHTML='<tr><td colspan="7" class="ph-txt" style="padding:20px 8px">IR nodes appear here after transpiling…</td></tr>';
+  TAB_IDS.forEach(id=>document.getElementById('out-'+id).innerHTML='<span class="ph-txt">Will appear after transpiling…</span>');
+  ['sv0','sv1','sv2'].forEach(id=>document.getElementById(id).textContent='—');
+  document.getElementById('status').textContent='Ready'; document.getElementById('status').className='status';
+  document.getElementById('err-wrap').className='err-wrap';
+  document.getElementById('diff-btn').style.display='none';
+  document.getElementById('diff-wrap').classList.remove('show');
+  lastData=null; resetPipeline(); updateLineNums();
+}
+
+function countUp(id, target){
+  const el=document.getElementById(id);
+  let v=0; const step=Math.max(1,Math.ceil(target/14));
+  const t=setInterval(()=>{ v=Math.min(v+step,target); el.textContent=v; if(v>=target)clearInterval(t); },25);
+}
+
+function updateLineNums(){
+  const ta=document.getElementById('src');
+  const n=ta.value.split('\n').length;
+  document.getElementById('lnums').innerHTML=Array.from({length:Math.max(n,1)},(_,i)=>`<span>${i+1}</span>`).join('');
+}
+
+function toggleGuide(){
+  const b=document.getElementById('guide-body'), t=document.getElementById('guide-toggle');
+  b.classList.toggle('open'); t.classList.toggle('open');
+}
+function showGuide(lang,btn){
+  document.querySelectorAll('.lgt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.syntax-block').forEach(b=>b.classList.remove('on'));
+  document.getElementById('guide-'+lang).classList.add('on');
+}
+
+function toggleExamples(forceClose){
+  const d=document.getElementById('ex-drawer');
+  if(forceClose===false){ d.classList.remove('open'); return; }
+  d.classList.toggle('open');
+  buildExamples();
+}
+
+/* ── Keyboard shortcut ── */
+document.getElementById('src').addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();transpile();}
+});
+document.getElementById('src').addEventListener('input', updateLineNums);
+
+init();
+</script>
+</body>
+</html>
