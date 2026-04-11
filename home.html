@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>XPILE — Multi-Language Transpiler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="home.css"/>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-inner">
+    <a href="home.html" class="nav-logo">XPILE</a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#languages">Languages</a>
+      <a href="#about">About</a>
+    </div>
+    <a href="app.html" class="nav-cta">Launch App →</a>
+    <button class="nav-burger" id="burger" aria-label="menu">
+      <span></span><span></span>
+    </button>
+  </div>
+  <div class="nav-mobile" id="mobile-menu">
+    <a href="#features" onclick="closeMobile()">Features</a>
+    <a href="#pipeline" onclick="closeMobile()">Pipeline</a>
+    <a href="#languages" onclick="closeMobile()">Languages</a>
+    <a href="app.html" class="mobile-cta">Launch App →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg">
+    <div class="hero-grid"></div>
+    <div class="hero-orb orb1"></div>
+    <div class="hero-orb orb2"></div>
+    <div class="hero-orb orb3"></div>
+  </div>
+
+  <div class="hero-inner">
+    <div class="hero-eyebrow reveal">
+      <span class="dot-pulse"></span>
+      Open Source · C-Powered Engine · v2.0
+    </div>
+
+    <h1 class="hero-title reveal-up">
+      <span class="line1">WRITE</span>
+      <span class="line2">ONCE.<br>RUN IN</span>
+      <span class="line3 accent-text">FOUR<br>LANGUAGES.</span>
+    </h1>
+
+    <p class="hero-desc reveal-up delay-1">
+      XPILE is a blazing-fast multi-language transpiler built on a hand-crafted
+      C engine. Write code in Python, C, C++, or Java — and instantly get
+      equivalent output in all four, plus a full IR visualization.
+    </p>
+
+    <div class="hero-actions reveal-up delay-2">
+      <a href="app.html" class="btn-primary">
+        <span>Launch Transpiler</span>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      </a>
+      <a href="#pipeline" class="btn-ghost">How it works</a>
+    </div>
+
+    <div class="hero-stats reveal-up delay-3">
+      <div class="hstat">
+        <div class="hstat-n">4</div>
+        <div class="hstat-l">Languages</div>
+      </div>
+      <div class="hstat-div"></div>
+      <div class="hstat">
+        <div class="hstat-n">1</div>
+        <div class="hstat-l">C Engine</div>
+      </div>
+      <div class="hstat-div"></div>
+      <div class="hstat">
+        <div class="hstat-n">∞</div>
+        <div class="hstat-l">Possibilities</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING CODE CARD -->
+  <div class="hero-code-card reveal-right">
+    <div class="code-card-header">
+      <div class="traffic-lights">
+        <span class="tl red"></span>
+        <span class="tl yellow"></span>
+        <span class="tl green"></span>
+      </div>
+      <span class="code-card-lang" id="card-lang-label">Python</span>
+    </div>
+    <div class="code-card-body" id="code-card-body"></div>
+    <div class="code-card-footer">
+      <div class="lang-tabs" id="lang-tabs">
+        <button class="ltab active" data-lang="python">PY</button>
+        <button class="ltab" data-lang="c">C</button>
+        <button class="ltab" data-lang="cpp">C++</button>
+        <button class="ltab" data-lang="java">Java</button>
+      </div>
+      <span class="card-badge">✓ transpiled</span>
+    </div>
+  </div>
+
+  <div class="scroll-hint reveal delay-3">
+    <span>Scroll</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-track">
+    <div class="marquee-inner">
+      <span>Lexer</span><span class="sep">◆</span>
+      <span>Parser</span><span class="sep">◆</span>
+      <span>IR Builder</span><span class="sep">◆</span>
+      <span>Code Generator</span><span class="sep">◆</span>
+      <span>Python</span><span class="sep">◆</span>
+      <span>C</span><span class="sep">◆</span>
+      <span>C++</span><span class="sep">◆</span>
+      <span>Java</span><span class="sep">◆</span>
+      <span>Syntax Highlighting</span><span class="sep">◆</span>
+      <span>Token Stream</span><span class="sep">◆</span>
+      <span>Diff View</span><span class="sep">◆</span>
+      <span>One-Click Download</span><span class="sep">◆</span>
+      <!-- duplicate for seamless loop -->
+      <span>Lexer</span><span class="sep">◆</span>
+      <span>Parser</span><span class="sep">◆</span>
+      <span>IR Builder</span><span class="sep">◆</span>
+      <span>Code Generator</span><span class="sep">◆</span>
+      <span>Python</span><span class="sep">◆</span>
+      <span>C</span><span class="sep">◆</span>
+      <span>C++</span><span class="sep">◆</span>
+      <span>Java</span><span class="sep">◆</span>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="section-inner">
+    <div class="section-header reveal">
+      <div class="section-tag">What it does</div>
+      <h2 class="section-title">Everything you need<br>to transpile code.</h2>
+    </div>
+
+    <div class="features-grid">
+
+      <div class="feature-card fc-large reveal-up">
+        <div class="fc-icon">⟨/⟩</div>
+        <h3>Multi-Language<br>Transpilation</h3>
+        <p>Write your program once in any supported language and get clean, equivalent output in Python, C, C++, and Java — simultaneously, in under a second.</p>
+        <div class="fc-langs">
+          <span class="fc-lang py">Python</span>
+          <span class="fc-lang c">C</span>
+          <span class="fc-lang cpp">C++</span>
+          <span class="fc-lang java">Java</span>
+        </div>
+      </div>
+
+      <div class="feature-card reveal-up delay-1">
+        <div class="fc-icon">◈</div>
+        <h3>Lexer &amp;<br>Tokenizer</h3>
+        <p>The C engine performs full lexical analysis, breaking your source into typed tokens with line tracking and error recovery.</p>
+      </div>
+
+      <div class="feature-card reveal-up delay-2">
+        <div class="fc-icon">⬡</div>
+        <h3>IR<br>Visualization</h3>
+        <p>Inspect the Intermediate Representation — every <code>IR_ASSIGN</code>, <code>IR_BINOP</code>, <code>IR_IF</code>, <code>IR_WHILE</code>, and more — as a color-coded table.</p>
+      </div>
+
+      <div class="feature-card reveal-up delay-1">
+        <div class="fc-icon">⇄</div>
+        <h3>Side-by-Side<br>Diff View</h3>
+        <p>Compare source and target language output in a synchronized diff panel. See exactly how your constructs are transformed.</p>
+      </div>
+
+      <div class="feature-card reveal-up delay-2">
+        <div class="fc-icon">✦</div>
+        <h3>Syntax<br>Highlighting</h3>
+        <p>All output code is rendered with full syntax highlighting — keywords, strings, numbers, operators, and comments each get distinct colors.</p>
+      </div>
+
+      <div class="feature-card fc-wide reveal-up">
+        <div class="fc-icon">↓</div>
+        <h3>Download &amp; Copy</h3>
+        <p>Copy any output to clipboard or download as a properly-named source file (<code>.py</code>, <code>.c</code>, <code>.cpp</code>, <code>.java</code>) with one click.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE -->
+<section class="pipeline-section" id="pipeline">
+  <div class="section-inner">
+    <div class="section-header reveal">
+      <div class="section-tag">How it works</div>
+      <h2 class="section-title">Five stages.<br>One unified output.</h2>
+    </div>
+
+    <div class="pipeline-visual">
+      <div class="pv-line"></div>
+
+      <div class="pv-step reveal-left">
+        <div class="pv-num">01</div>
+        <div class="pv-content">
+          <div class="pv-icon">◈</div>
+          <h3>Lexer</h3>
+          <p>The source code string is scanned character-by-character. Numbers, identifiers, keywords, and operators are extracted into a flat token stream with their types and lexemes preserved.</p>
+          <div class="pv-tag">Token Stream</div>
+        </div>
+      </div>
+
+      <div class="pv-step pv-right reveal-right">
+        <div class="pv-num">02</div>
+        <div class="pv-content">
+          <div class="pv-icon">⌥</div>
+          <h3>Parser</h3>
+          <p>The token stream is consumed by a recursive-descent parser that understands statements, expressions, conditionals, loops, assignments, and function calls across all four input languages.</p>
+          <div class="pv-tag">AST Nodes</div>
+        </div>
+      </div>
+
+      <div class="pv-step reveal-left">
+        <div class="pv-num">03</div>
+        <div class="pv-content">
+          <div class="pv-icon">⬡</div>
+          <h3>IR Builder</h3>
+          <p>Parsed AST nodes are lowered into a flat Intermediate Representation — a language-neutral list of typed IR nodes. This is the heart of the transpiler, making all code-gen targets equal.</p>
+          <div class="pv-tag">IR Nodes</div>
+        </div>
+      </div>
+
+      <div class="pv-step pv-right reveal-right">
+        <div class="pv-num">04</div>
+        <div class="pv-content">
+          <div class="pv-icon">⊗</div>
+          <h3>Code Generator ×4</h3>
+          <p>Four independent code generators walk the IR and emit idiomatic code in Python, C, C++, and Java. Each generator handles types, indentation, semicolons, and language-specific idioms.</p>
+          <div class="pv-tag">×4 Outputs</div>
+        </div>
+      </div>
+
+      <div class="pv-step reveal-left">
+        <div class="pv-num">05</div>
+        <div class="pv-content">
+          <div class="pv-icon">✦</div>
+          <h3>Output &amp; Visualization</h3>
+          <p>Results are streamed back as structured JSON. The browser renders syntax-highlighted code, a token list, the IR table, and a side-by-side diff view — all live.</p>
+          <div class="pv-tag">JSON → UI</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- LANGUAGES -->
+<section class="languages-section" id="languages">
+  <div class="section-inner">
+    <div class="section-header reveal">
+      <div class="section-tag">Supported Languages</div>
+      <h2 class="section-title">Input any.<br>Get all four.</h2>
+    </div>
+
+    <div class="langs-grid">
+
+      <div class="lang-card lc-py reveal-up">
+        <div class="lc-header">
+          <div class="lc-dot"></div>
+          <span class="lc-name">Python</span>
+          <span class="lc-ext">.py</span>
+        </div>
+        <div class="lc-features">
+          <div class="lc-feat">✓ Variable assignment</div>
+          <div class="lc-feat">✓ Arithmetic expressions</div>
+          <div class="lc-feat">✓ <code>print</code> / <code>print(x)</code></div>
+          <div class="lc-feat">✓ <code>if</code> / <code>else</code> blocks</div>
+          <div class="lc-feat">✓ <code>while</code> loops</div>
+          <div class="lc-feat">✓ <code>return</code> statements</div>
+        </div>
+        <div class="lc-note">Indentation-aware parser</div>
+      </div>
+
+      <div class="lang-card lc-c reveal-up delay-1">
+        <div class="lc-header">
+          <div class="lc-dot"></div>
+          <span class="lc-name">C</span>
+          <span class="lc-ext">.c</span>
+        </div>
+        <div class="lc-features">
+          <div class="lc-feat">✓ Typed declarations (<code>int</code>, <code>float</code>…)</div>
+          <div class="lc-feat">✓ <code>printf</code> / <code>scanf</code></div>
+          <div class="lc-feat">✓ <code>if</code> / <code>else</code> braces</div>
+          <div class="lc-feat">✓ <code>while</code> / <code>for</code> loops</div>
+          <div class="lc-feat">✓ Preprocessor directives</div>
+          <div class="lc-feat">✓ <code>return</code> statements</div>
+        </div>
+        <div class="lc-note">Brace-delimited block parser</div>
+      </div>
+
+      <div class="lang-card lc-cpp reveal-up delay-2">
+        <div class="lc-header">
+          <div class="lc-dot"></div>
+          <span class="lc-name">C++</span>
+          <span class="lc-ext">.cpp</span>
+        </div>
+        <div class="lc-features">
+          <div class="lc-feat">✓ <code>auto</code> type deduction</div>
+          <div class="lc-feat">✓ <code>cout &lt;&lt;</code> / <code>cin &gt;&gt;</code></div>
+          <div class="lc-feat">✓ <code>if</code> / <code>else</code> / <code>while</code></div>
+          <div class="lc-feat">✓ Range-based <code>for</code> loops</div>
+          <div class="lc-feat">✓ <code>namespace std</code> handling</div>
+          <div class="lc-feat">✓ <code>endl</code> stream manipulator</div>
+        </div>
+        <div class="lc-note">Superset of C parser with extensions</div>
+      </div>
+
+      <div class="lang-card lc-java reveal-up delay-3">
+        <div class="lc-header">
+          <div class="lc-dot"></div>
+          <span class="lc-name">Java</span>
+          <span class="lc-ext">.java</span>
+        </div>
+        <div class="lc-features">
+          <div class="lc-feat">✓ Class &amp; method wrappers</div>
+          <div class="lc-feat">✓ <code>System.out.println</code></div>
+          <div class="lc-feat">✓ Typed vars (<code>int</code>, <code>String</code>…)</div>
+          <div class="lc-feat">✓ <code>if</code> / <code>else</code> blocks</div>
+          <div class="lc-feat">✓ <code>while</code> / <code>for</code> loops</div>
+          <div class="lc-feat">✓ <code>return</code> statements</div>
+        </div>
+        <div class="lc-note">Main-class boilerplate-aware</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT / TECH STACK -->
+<section class="about-section" id="about">
+  <div class="section-inner about-inner">
+    <div class="about-left reveal-left">
+      <div class="section-tag">About the project</div>
+      <h2 class="section-title">Built from scratch.<br>No shortcuts.</h2>
+      <p>XPILE is an educational systems project demonstrating how real compilers work — from raw source text all the way to executable-ready output in multiple languages. Every stage is hand-built in C with zero external libraries.</p>
+      <p>The web layer is intentionally thin: a minimal Python HTTP server pipes stdin/stdout to the C binary, and a pure-HTML/CSS/JS frontend visualizes the results. No frameworks. No dependencies.</p>
+      <a href="app.html" class="btn-primary" style="margin-top:2rem">Try it yourself →</a>
+    </div>
+
+    <div class="tech-stack reveal-right">
+      <div class="ts-title">Tech Stack</div>
+      <div class="ts-item">
+        <div class="ts-icon" style="background:rgba(85,85,85,.15);color:#aaa">C</div>
+        <div>
+          <div class="ts-name">Transpiler Engine</div>
+          <div class="ts-desc">Lexer, parser, IR builder, and 4× code generators — all in ANSI C.</div>
+        </div>
+      </div>
+      <div class="ts-item">
+        <div class="ts-icon" style="background:rgba(53,114,165,.12);color:#4fa8e8">Py</div>
+        <div>
+          <div class="ts-name">HTTP Server</div>
+          <div class="ts-desc">Python stdlib <code>http.server</code> — bridges the browser to the C binary via subprocess.</div>
+        </div>
+      </div>
+      <div class="ts-item">
+        <div class="ts-icon" style="background:rgba(0,255,179,.08);color:#00ffb3">&lt;/&gt;</div>
+        <div>
+          <div class="ts-name">Frontend</div>
+          <div class="ts-desc">Vanilla HTML, CSS, and JavaScript — zero frameworks, zero build steps.</div>
+        </div>
+      </div>
+      <div class="ts-item">
+        <div class="ts-icon" style="background:rgba(249,168,37,.1);color:#f9a825">⚡</div>
+        <div>
+          <div class="ts-name">One-Command Launch</div>
+          <div class="ts-desc">A single <code>bash run.sh</code> compiles the C engine and starts the server.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner reveal-up">
+    <div class="cta-bg-text">XPILE</div>
+    <div class="section-tag">Ready to try it?</div>
+    <h2 class="cta-title">Start transpiling<br>in seconds.</h2>
+    <p>No installation needed for the web interface. Just run <code>bash run.sh</code> and open your browser.</p>
+    <a href="app.html" class="btn-primary btn-xl">
+      <span>Open the Transpiler</span>
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">XPILE</div>
+    <div class="footer-sub">Multi-Language Transpiler · Powered by C</div>
+    <div class="footer-links">
+      <a href="home.html">Home</a>
+      <a href="app.html">App</a>
+      <a href="#features">Features</a>
+      <a href="#pipeline">Pipeline</a>
+    </div>
+    <div class="footer-note">Built with ♥ — zero dependencies</div>
+  </div>
+</footer>
+
+<script src="home.js"></script>
+</body>
+</html>
