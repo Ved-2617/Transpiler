@@ -1045,3 +1045,194 @@ textarea::placeholder { color: var(--t3); font-style: italic; }
   .btn-run { padding: 9px 16px; font-size: .58rem; }
   .app { padding: 0 16px 60px; }
 }
+
+
+/*
+ * ================================================================
+ *  app_additions.css
+ *
+ *  Paste the contents of this file at the bottom of your existing
+ *  app.css.  These are all the classes that app.js references but
+ *  that do not exist in the original stylesheet.
+ *
+ *  Sections
+ *  ────────
+ *  1. Status bar states       (.st-ok / .st-warn / .st-err / .st-busy)
+ *  2. Syntax highlight tokens (.hl-kw / .hl-str / .hl-cm / .hl-nm)
+ *  3. IR table cell types     (.ir-type / .ir-val / .ir-op / .ir-dt)
+ *  4. Token stream badges     (.tok and per-type colour variants)
+ *  5. Example snippet drawer  (.ex-btn / .ex-inner / .ex-label / .ex-grid)
+ *  6. Code output pre block   (normalises the <pre> the highlighter wraps)
+ * ================================================================ */
+
+/* ── 1. STATUS BAR STATES ─────────────────────────────────────────
+   The #status span gets one of these classes appended after each
+   transpile.  Colours intentionally follow the existing palette
+   variables so they integrate with any theme the user has set.    */
+
+.status.st-ok   { color: var(--green,  #4ade80); }
+.status.st-warn { color: var(--amber,  #fbbf24); }
+.status.st-err  { color: var(--red,    #f87171); }
+.status.st-busy { color: var(--violet, #a78bfa); animation: pulse 1s ease-in-out infinite; }
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+}
+
+/* ── 2. SYNTAX HIGHLIGHT TOKENS ──────────────────────────────────
+   Applied by the highlight() function in app.js to the <pre> blocks
+   inside each output tab.  Uses a dark-on-dark palette that matches
+   the existing editor look.                                        */
+
+.code-out pre {
+    margin: 0;
+    padding: 0;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: 1.6;
+    white-space: pre;
+    word-break: normal;
+    overflow-x: auto;
+}
+
+/* keywords */
+.hl-kw  { color: var(--violet,  #a78bfa); font-weight: 600; }
+
+/* string literals */
+.hl-str { color: var(--green,   #4ade80); }
+
+/* comments */
+.hl-cm  { color: var(--muted,   #6b7280); font-style: italic; }
+
+/* numeric literals */
+.hl-nm  { color: var(--amber,   #fbbf24); }
+
+/* ── 3. IR TABLE CELL TYPES ───────────────────────────────────────
+   Each <td> in the IR table gets one of these classes from
+   renderIR() in app.js.                                           */
+
+/* IR node type badge (e.g. "IR_ASSIGN") */
+.ir-type {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(167, 139, 250, 0.15);
+    color: var(--violet, #a78bfa);
+    white-space: nowrap;
+}
+
+/* value cells: dest, src1, src2 */
+.ir-val {
+    font-family: var(--mono, 'Share Tech Mono', monospace);
+    font-size: 0.78rem;
+    color: var(--fg, #e2e8f0);
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* operator cell */
+.ir-op {
+    font-family: var(--mono, 'Share Tech Mono', monospace);
+    font-size: 0.78rem;
+    color: var(--amber, #fbbf24);
+    text-align: center;
+}
+
+/* dtype cell */
+.ir-dt {
+    font-family: var(--mono, 'Share Tech Mono', monospace);
+    font-size: 0.72rem;
+    color: var(--muted, #6b7280);
+}
+
+/* ── 4. TOKEN STREAM BADGES ───────────────────────────────────────
+   renderTokens() wraps each token in a <span class="tok tok-TYPE">.
+   The base .tok class styles the chip; variants colour it by type. */
+
+.tok {
+    display: inline-block;
+    margin: 2px 3px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: var(--mono, 'Share Tech Mono', monospace);
+    font-size: 0.7rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--fg, #e2e8f0);
+    cursor: default;
+    transition: background .15s;
+}
+.tok:hover { background: rgba(255,255,255,0.10); }
+
+/* Colour variants — match the token category to the highlight palette */
+.tok-if, .tok-else, .tok-while, .tok-for,
+.tok-return, .tok-print, .tok-class,
+.tok-public, .tok-private, .tok-protected,
+.tok-static, .tok-const, .tok-new,
+.tok-int, .tok-float-kw, .tok-char-kw,
+.tok-void, .tok-auto, .tok-bool, .tok-string-kw,
+.tok-true, .tok-false  { color: var(--violet, #a78bfa); }
+
+.tok-string            { color: var(--green,  #4ade80); }
+.tok-number            { color: var(--amber,  #fbbf24); }
+
+.tok-assign, .tok-plus, .tok-minus, .tok-star,
+.tok-slash, .tok-percent, .tok-eq, .tok-neq,
+.tok-gt, .tok-lt, .tok-gte, .tok-lte,
+.tok-and, .tok-or, .tok-not,
+.tok-lshift, .tok-rshift { color: var(--cyan, #67e8f9); }
+
+/* ── 5. EXAMPLE SNIPPET DRAWER ────────────────────────────────────
+   The collapsible drawer under "Source Code" that appears when the
+   user clicks "Examples ▾".  The drawer itself (.examples-drawer)
+   should already be in app.css; these classes style its interior.  */
+
+.ex-inner {
+    padding: 10px 14px 14px;
+}
+
+.ex-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted, #6b7280);
+    margin-bottom: 8px;
+}
+
+.ex-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.ex-btn {
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.05);
+    color: var(--fg, #e2e8f0);
+    font-family: var(--mono, 'Share Tech Mono', monospace);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+}
+.ex-btn:hover {
+    background: rgba(167,139,250,0.15);
+    border-color: var(--violet, #a78bfa);
+}
+
+/* ── 6. RUN BUTTON RUNNING STATE ──────────────────────────────────
+   app.js adds .running to #btn-run while a transpile is in flight. */
+
+.btn-run.running {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
